@@ -20,10 +20,21 @@ locals {
   recordsets_name = split(".", local.googleapis_url)[0]
 }
 
-resource "google_compute_global_address" "private_service_connect" {
+#resource "google_compute_global_address" "private_service_connect_global_address" {
+#  provider     = google-beta
+#  project      = var.project_id
+#  name         = var.private_service_connect_name
+#  address_type = "INTERNAL"
+#  purpose      = "PRIVATE_SERVICE_CONNECT"
+#  network      = var.network_self_link
+#  address      = var.private_service_connect_ip
+#}
+
+resource "google_compute_address" "private_service_connect_address" {
   provider     = google-beta
   project      = var.project_id
-  name         = var.private_service_connect_name
+  region = var.region
+  name         = var.address_name? var.address_name:var.private_service_connect_name
   address_type = "INTERNAL"
   purpose      = "PRIVATE_SERVICE_CONNECT"
   network      = var.network_self_link
@@ -36,7 +47,7 @@ resource "google_compute_global_forwarding_rule" "forwarding_rule_private_servic
   name                    = var.forwarding_rule_name
   target                  = var.forwarding_rule_target
   network                 = var.network_self_link
-  ip_address              = google_compute_global_address.private_service_connect.id
+  ip_address              = google_compute_address.private_service_connect_address.id
   load_balancing_scheme   = ""
   allow_psc_global_access = var.psc_global_access
 

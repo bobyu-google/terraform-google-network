@@ -19,42 +19,63 @@ variable "project_id" {
   type        = string
 }
 
+variable "region" {
+  description = "(Private Service Connect Endpoints for Published Services) Region to create the regional forwarding rule in."
+  type        = string
+  default = null
+}
+
 variable "network_self_link" {
   description = "Network self link for Private Service Connect."
   type        = string
 }
 
 variable "dns_code" {
-  description = "Code to identify DNS resources in the form of `{dns_code}-{dns_type}`"
+  description = "(Private Service Connect for Google APIs) Code to identify DNS resources in the form of {dns_code}-{dns_type}"
   type        = string
   default     = "dz"
 }
 
-variable "private_service_connect_name" {
-  description = "Private Service Connect endpoint name. Defaults to `global-psconnect-ip`"
-  type        = string
-  default     = "global-psconnect-ip"
-}
-
-variable "private_service_connect_ip" {
-  description = "The internal IP to be used for the private service connect."
-  type        = string
-}
-
 variable "forwarding_rule_name" {
-  description = "Forwarding rule resource name. The forwarding rule name for PSC Google APIs must be an 1-20 characters string with lowercase letters and numbers and must start with a letter. Defaults to `globalrule`"
+  description = <<EOT
+  Private Service Connect Forwarding Rule resource name.
+  (Private Service Connect for Published Services) Follow regular GCE naming pattern: https://docs.cloud.google.com/compute/docs/naming-resources#resource-name-format. Defaults to `{region}-psc-endpoint`.
+  (Private Service Connect for Google APIs) This must be a 1-20 characters string with lowercase letters and numbers and must start with a letter. Defaults to `globalrule`;
+EOT
   type        = string
   default     = "globalrule"
 }
 
-variable "forwarding_rule_target" {
-  description = "Target resource to receive the matched traffic. Only `all-apis` and `vpc-sc` are valid."
+variable "private_service_connect_name" {
+  description = "**Deprecated** use address_name instead; Private Service Connect address name. Defaults to `global-psconnect-ip`."
   type        = string
+  default     = "global-psconnect-ip"
+}
 
-  validation {
-    condition     = var.forwarding_rule_target == "all-apis" || var.forwarding_rule_target == "vpc-sc"
-    error_message = "For forwarding_rule_target only `all-apis` and `vpc-sc` are valid."
-  }
+variable "address_name" {
+  description = "Private Service Connect address name. Defaults to global-psconnect-ip for Private Service Connect for Google APIs Defaults to {region}-psc-ip for PSC Endpoints."
+  type        = string
+  default = var.forwarding_rule_target=="all-apis"||var.forwarding_rule_target=="vpc-sc"? "global-psconnect-ip":"{region}-psc-ip"
+}
+
+variable "private_service_connect_ip" {
+  description = <<EOT
+Set this value to the internal IP to be used for Private Service Connect;
+(Private Service Connect Endpoints for Published Services) GCP will pick an address if left unset.
+(Private Service Connect for Google APIs) IP must be specified; IPv6 is not supported.
+EOT
+  type        = string
+}
+
+variable "ip_version" {
+  description = "(Private Service Connect Endpoints for Published Services) “IPv4” or “IPv6”. Only set this field when private_service_connect_ip is unset. If both private_service_connect_ip and ip_version are unset, GCP will pick an IPv4 address."
+  type        = string
+  default     = "IPV4"
+}
+
+variable "forwarding_rule_target" {
+  description = "The target Service Attachment URL for Private Service Connect for Published Service, or the target API bundle name (“all-apis” or “vpc-sc”) for Private Service Connect for Google APIs."
+  type        = string
 }
 
 variable "service_directory_namespace" {
@@ -64,13 +85,13 @@ variable "service_directory_namespace" {
 }
 
 variable "service_directory_region" {
-  description = "Service Directory region to register this global forwarding rule under. Defaults to `us-central1` if not defined."
+  description = "(Private Service Connect for Google APIs) Service Directory region to register this Private Service Connection endpoint under. Defaults to us-central1 if not defined."
   type        = string
   default     = null
 }
 
 variable "psc_global_access" {
-  description = "This is used in PSC consumer ForwardingRule to control whether the PSC endpoint can be accessed from another region. Defaults to `false`"
+  description = "(Private Service Connect Endpoints for Published Services) Whether to allow Private Service Connect global access. Default to false."
   type        = bool
   default     = false
 }
