@@ -25,6 +25,9 @@ Session.vim
 **/.terraform/*
 .terraform.lock.hcl
 
+# Local intellij directories
+**/.idea/*
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
